@@ -14,10 +14,81 @@
   "contributes": {
     "commands": [
       {
-        "command": "copilot-tasks.helloWorld",
-        "title": "Hello World"
+        "command": "copilot-tasks.openTodo",
+        "title": "Open Todo File",
+        "category": "Copilot Tasks"
+      },
+      {
+        "command": "copilot-tasks.addTask",
+        "title": "Add New Task",
+        "category": "Copilot Tasks"
+      },
+      {
+        "command": "copilot-tasks.toggleTask",
+        "title": "Toggle Task Completion",
+        "category": "Copilot Tasks"
+      },
+      {
+        "command": "copilot-tasks.showStats",
+        "title": "Show Task Statistics",
+        "category": "Copilot Tasks"
+      },
+      {
+        "command": "copilot-tasks.forceSync",
+        "title": "Force Synchronization",
+        "category": "Copilot Tasks"
+      },
+      {
+        "command": "copilot-tasks.syncStatus",
+        "title": "Show Sync Status",
+        "category": "Copilot Tasks"
+      },
+      {
+        "command": "copilot-tasks.refreshTree",
+        "title": "Refresh Tasks",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "copilot-tasks.toggleGrouping",
+        "title": "Toggle Grouping",
+        "icon": "$(list-tree)"
       }
-    ]
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "copilot-tasks.taskView",
+          "name": "Copilot Tasks",
+          "when": "workbenchState != empty"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "copilot-tasks.refreshTree",
+          "when": "view == copilot-tasks.taskView",
+          "group": "navigation"
+        },
+        {
+          "command": "copilot-tasks.toggleGrouping",
+          "when": "view == copilot-tasks.taskView",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "copilot-tasks.toggleTask",
+          "when": "view == copilot-tasks.taskView && viewItem == pendingTask",
+          "group": "inline"
+        },
+        {
+          "command": "copilot-tasks.toggleTask",
+          "when": "view == copilot-tasks.taskView && viewItem == completedTask",
+          "group": "inline"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run compile",
