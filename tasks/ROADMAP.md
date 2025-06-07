@@ -11,8 +11,6 @@
 - [x] Synchronisation : modification dans l'éditeur → rafraîchissement en UI (et inversement)
 - [x] Sidebar (TreeView) listant les tâches
 - [x] Documentation de base et README
-- [x] **CORRECTIONS** : Synchronisation circulaire résolue
-- [x] **AMÉLIORATION** : Sélection des catégories existantes avec QuickPick
 
 ---
 
