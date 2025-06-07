@@ -3,7 +3,9 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import { TodoParser } from "./parser";
+import { SyncManager } from "./syncManager";
+import { TaskManager } from "./taskManager";
+import { TaskTreeDataProvider } from "./treeViewProvider";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -11,6 +13,24 @@ export function activate(context: vscode.ExtensionContext) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "copilot-tasks" is now active!');
+
+  // Initialize task manager and synchronization
+  const taskManager = TaskManager.getInstance();
+  const syncManager = SyncManager.getInstance();
+
+  // Initialize components
+  taskManager.initialize();
+  syncManager.initialize();
+
+  // Initialize TreeView
+  const taskTreeDataProvider = new TaskTreeDataProvider();
+  const treeView = vscode.window.createTreeView("copilot-tasks.taskView", {
+    treeDataProvider: taskTreeDataProvider,
+    showCollapseAll: true,
+  });
+
+  // Add to disposables
+  context.subscriptions.push(treeView);
 
   // Register the command to open/create the todo.md file
   const openTodoDisposable = vscode.commands.registerCommand("copilot-tasks.openTodo", async () => {
@@ -37,11 +57,6 @@ export function activate(context: vscode.ExtensionContext) {
   // Register the command to add a new task
   const addTaskDisposable = vscode.commands.registerCommand("copilot-tasks.addTask", async () => {
     try {
-      const todoPath = await getTodoPath();
-      if (!todoPath) {
-        return;
-      }
-
       // Get task text from user
       const taskText = await vscode.window.showInputBox({
         prompt: "Enter the task description",
@@ -58,63 +73,53 @@ export function activate(context: vscode.ExtensionContext) {
         placeHolder: "Tasks, Ideas, Bugs, etc.",
       });
 
-      // Read current content
-      let content = "";
-      if (fs.existsSync(todoPath)) {
-        content = await fs.promises.readFile(todoPath, "utf8");
-      } else {
-        content = await createDefaultTodoFile(todoPath);
-      }
-
-      // Add the new task
-      const updatedContent = TodoParser.addTask(content, taskText, category || undefined);
-      await fs.promises.writeFile(todoPath, updatedContent, "utf8");
-
+      // Use task manager to add task
+      await taskManager.addTask(taskText, category || undefined);
       vscode.window.showInformationMessage(`Task added: "${taskText}"`);
     } catch (error) {
       vscode.window.showErrorMessage(`Error adding task: ${error}`);
     }
   });
 
-  // Register the command to toggle task completion
-  const toggleTaskDisposable = vscode.commands.registerCommand("copilot-tasks.toggleTask", async () => {
+  // Register the command to toggle task completion (supports both TreeView and QuickPick)
+  const toggleTaskDisposable = vscode.commands.registerCommand("copilot-tasks.toggleTask", async (taskArg?: any) => {
     try {
-      const todoPath = await getTodoPath();
-      if (!todoPath || !fs.existsSync(todoPath)) {
-        vscode.window.showErrorMessage("No todo.md file found. Create one first.");
-        return;
+      let taskToToggle;
+
+      if (taskArg && taskArg.id) {
+        // Called from TreeView with task argument
+        taskToToggle = taskArg;
+      } else {
+        // Called from command palette, show QuickPick
+        const tasks = taskManager.getTasks();
+
+        if (tasks.length === 0) {
+          vscode.window.showInformationMessage("No tasks found. Add some tasks first.");
+          return;
+        }
+
+        // Show task selection
+        const taskItems = tasks.map((task) => ({
+          label: task.completed ? `✅ ${task.text}` : `⭕ ${task.text}`,
+          description: task.category ? `Category: ${task.category}` : undefined,
+          task: task,
+        }));
+
+        const selectedItem = await vscode.window.showQuickPick(taskItems, {
+          placeHolder: "Select a task to toggle",
+        });
+
+        if (!selectedItem) {
+          return;
+        }
+
+        taskToToggle = selectedItem.task;
       }
 
-      // Read current content
-      const content = await fs.promises.readFile(todoPath, "utf8");
-      const tasks = TodoParser.parse(content);
+      // Toggle the task using task manager
+      await taskManager.toggleTask(taskToToggle.id);
 
-      if (tasks.length === 0) {
-        vscode.window.showInformationMessage("No tasks found in todo.md");
-        return;
-      }
-
-      // Show task selection
-      const taskItems = tasks.map((task) => ({
-        label: task.completed ? `✅ ${task.text}` : `⭕ ${task.text}`,
-        description: task.category ? `Category: ${task.category}` : undefined,
-        task: task,
-      }));
-
-      const selectedItem = await vscode.window.showQuickPick(taskItems, {
-        placeHolder: "Select a task to toggle",
-      });
-
-      if (!selectedItem) {
-        return;
-      }
-
-      // Toggle the task
-      const updatedContent = TodoParser.updateTaskCompletion(content, selectedItem.task.id, !selectedItem.task.completed);
-
-      await fs.promises.writeFile(todoPath, updatedContent, "utf8");
-
-      const status = selectedItem.task.completed ? "uncompleted" : "completed";
+      const status = taskToToggle.completed ? "uncompleted" : "completed";
       vscode.window.showInformationMessage(`Task marked as ${status}`);
     } catch (error) {
       vscode.window.showErrorMessage(`Error toggling task: ${error}`);
@@ -124,16 +129,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Register the command to show task statistics
   const showStatsDisposable = vscode.commands.registerCommand("copilot-tasks.showStats", async () => {
     try {
-      const todoPath = await getTodoPath();
-      if (!todoPath || !fs.existsSync(todoPath)) {
-        vscode.window.showErrorMessage("No todo.md file found. Create one first.");
-        return;
-      }
-
-      // Read current content and parse tasks
-      const content = await fs.promises.readFile(todoPath, "utf8");
-      const tasks = TodoParser.parse(content);
-      const stats = TodoParser.getStats(tasks);
+      const stats = taskManager.getStats();
 
       // Show statistics
       const message = `📊 Task Statistics:
@@ -148,7 +144,42 @@ Progress: ${stats.completionRate.toFixed(1)}%`;
     }
   });
 
-  context.subscriptions.push(openTodoDisposable, addTaskDisposable, toggleTaskDisposable, showStatsDisposable);
+  // Register the command to force synchronization
+  const forceSyncDisposable = vscode.commands.registerCommand("copilot-tasks.forceSync", async () => {
+    try {
+      await syncManager.forcSync();
+      vscode.window.showInformationMessage("Synchronization completed!");
+    } catch (error) {
+      vscode.window.showErrorMessage(`Error during sync: ${error}`);
+    }
+  });
+
+  // Register the command to show sync status
+  const syncStatusDisposable = vscode.commands.registerCommand("copilot-tasks.syncStatus", () => {
+    syncManager.showSyncStatus();
+  });
+
+  // Register TreeView commands
+  const refreshTreeDisposable = vscode.commands.registerCommand("copilot-tasks.refreshTree", () => {
+    taskTreeDataProvider.refresh();
+  });
+
+  const toggleGroupingDisposable = vscode.commands.registerCommand("copilot-tasks.toggleGrouping", () => {
+    taskTreeDataProvider.toggleGrouping();
+    const mode = taskTreeDataProvider.getGroupingMode() ? "categories" : "flat list";
+    vscode.window.showInformationMessage(`Tasks now grouped by: ${mode}`);
+  });
+
+  context.subscriptions.push(
+    openTodoDisposable,
+    addTaskDisposable,
+    toggleTaskDisposable,
+    showStatsDisposable,
+    forceSyncDisposable,
+    syncStatusDisposable,
+    refreshTreeDisposable,
+    toggleGroupingDisposable
+  );
 }
 
 /**
@@ -198,4 +229,8 @@ Welcome to your task manager! Use checkboxes to track your progress.
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+  // Dispose of managers
+  TaskManager.getInstance().dispose();
+  SyncManager.getInstance().dispose();
+}

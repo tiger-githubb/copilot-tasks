@@ -1,71 +1,146 @@
-# copilot-tasks README
+# Copilot Tasks
 
-This is the README for your extension "copilot-tasks". After writing up a brief description, we recommend including the following sections.
+A Markdown-based task manager integrated into VS Code, designed to work seamlessly with GitHub Copilot. Organize your tasks in a `todo.md` file, enjoy an intuitive sidebar interface, and leverage the power of Copilot to help write or improve your tasks.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### ✅ Core Task Management
 
-For example if there is an image subfolder under your extension project workspace:
+- **Markdown-based tasks**: Uses standard checkbox syntax (`- [ ]` and `- [x]`)
+- **Automatic file creation**: Creates `todo.md` at your workspace root if it doesn't exist
+- **Category support**: Organize tasks under headers (## Category Name)
+- **Real-time synchronization**: Changes in the editor automatically reflect in the sidebar and vice versa
 
-\!\[feature X\]\(images/feature-x.png\)
+### 🌲 Sidebar Interface
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- **TreeView display**: View all tasks in a dedicated sidebar panel
+- **Category grouping**: Tasks are automatically grouped by their markdown headers
+- **Visual indicators**: Different icons for completed (✅) and pending (⏳) tasks
+- **Click to toggle**: Click any task in the sidebar to mark it as complete/incomplete
+- **Flexible grouping**: Toggle between categorized and flat list views
 
-## Requirements
+### ⚡ Commands & Actions
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- **Open Todo File**: Quickly access your `todo.md` file
+- **Add New Task**: Add tasks via command palette with optional categories
+- **Toggle Task Completion**: Mark tasks as done/undone from command palette or sidebar
+- **Task Statistics**: View progress overview (total, completed, remaining, percentage)
+- **Force Sync**: Manually synchronize editor and UI if needed
+- **Refresh Tasks**: Reload tasks from file
 
-## Extension Settings
+## Getting Started
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+1. **Install the extension** (when available on marketplace)
+2. **Open a workspace** in VS Code
+3. **Run command**: `Copilot Tasks: Open Todo File` from the command palette (`Ctrl+Shift+P`)
+4. **Start adding tasks** using the sidebar or by editing the `todo.md` file directly
 
-For example:
+## Usage
 
-This extension contributes the following settings:
+### Adding Tasks
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+#### Method 1: Command Palette
 
-## Known Issues
+1. Press `Ctrl+Shift+P` to open command palette
+2. Type "Copilot Tasks: Add New Task"
+3. Enter your task text
+4. Optionally select a category
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+#### Method 2: Direct Editing
 
-## Release Notes
+Edit your `todo.md` file directly:
 
-Users appreciate release notes as you update your extension.
+```markdown
+# Todo List
 
-### 1.0.0
+## Work Tasks
 
-Initial release of ...
+- [ ] Review pull request #123
+- [ ] Update documentation
+- [x] Fix bug in authentication
 
-### 1.0.1
+## Personal
 
-Fixed issue #.
+- [ ] Buy groceries
+- [ ] Call dentist
+```
 
-### 1.1.0
+### Managing Tasks
 
-Added features X, Y, and Z.
+- **Toggle completion**: Click tasks in the sidebar or use the command palette
+- **View progress**: Use "Show Task Statistics" command
+- **Organize**: Add markdown headers to create categories
+- **Sync**: The extension automatically keeps everything in sync
+
+### Sidebar Features
+
+The **Copilot Tasks** panel in the Explorer sidebar provides:
+
+- **Real-time task list**: See all your tasks at a glance
+- **Category organization**: Tasks grouped under their headers
+- **Quick actions**: Click to toggle, right-click for context menu
+- **Visual progress**: Different icons for completed vs pending tasks
+
+## File Format
+
+Your `todo.md` file uses standard Markdown syntax:
+
+```markdown
+# Todo List
+
+Welcome to your task manager! Use checkboxes to track your progress.
+
+## Tasks
+
+- [ ] Incomplete task
+- [x] Completed task
+
+## Ideas
+
+- [ ] Another task in different category
+```
+
+## Commands
+
+| Command                                 | Description                           |
+| --------------------------------------- | ------------------------------------- |
+| `Copilot Tasks: Open Todo File`         | Open/create the todo.md file          |
+| `Copilot Tasks: Add New Task`           | Add a new task with optional category |
+| `Copilot Tasks: Toggle Task Completion` | Mark task as done/undone              |
+| `Copilot Tasks: Show Task Statistics`   | Display progress overview             |
+| `Copilot Tasks: Refresh Tasks`          | Reload tasks from file                |
+| `Copilot Tasks: Toggle Grouping`        | Switch between categorized/flat view  |
+| `Copilot Tasks: Force Synchronization`  | Manually sync editor and UI           |
+
+## Roadmap
+
+### V1.1 – Copilot Integration (Coming Soon)
+
+- Copilot-powered task completion suggestions
+- Smart task generation from code context
+- Integration with VS Code's language model tools
+
+### V2 – Advanced Features
+
+- Drag & drop task reordering
+- Multiple todo files support
+- Task search and filtering
+- Priority levels and custom tags
+
+### V3 – Integrations
+
+- GitHub Issues synchronization
+- Team collaboration features
+- Task analytics and reporting
+
+## Contributing
+
+This project is in active development. Contributions, feedback, and suggestions are welcome!
+
+## License
+
+[MIT License](LICENSE)
 
 ---
 
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+_Built with ❤️ for VS Code and GitHub Copilot users_
