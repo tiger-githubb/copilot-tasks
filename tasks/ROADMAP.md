@@ -1,6 +1,6 @@
 # Roadmap – Copilot Tasks
 
-## V1 – MVP (Minimum Viable Product)
+## V1 – MVP (Minimum Viable Product) ✅ COMPLET
 
 - [x] Générer le squelette de l'extension avec Yeoman (TypeScript, unbundled)
 - [x] Créer une commande VS Code pour ouvrir/éditer un fichier `todo.md` à la racine du projet
@@ -11,6 +11,8 @@
 - [x] Synchronisation : modification dans l'éditeur → rafraîchissement en UI (et inversement)
 - [x] Sidebar (TreeView) listant les tâches
 - [x] Documentation de base et README
+- [x] **CORRECTIONS** : Synchronisation circulaire résolue
+- [x] **AMÉLIORATION** : Sélection des catégories existantes avec QuickPick
 
 ---
 

@@ -3,9 +3,9 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import { SyncManager } from "./syncManager";
-import { TaskManager } from "./taskManager";
-import { TaskTreeDataProvider } from "./treeViewProvider";
+import { SyncManager } from "./sync-manager";
+import { TaskManager } from "./task-manager";
+import { TaskTreeDataProvider } from "./tree-view-provider";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -53,7 +53,6 @@ export function activate(context: vscode.ExtensionContext) {
       vscode.window.showErrorMessage(`Error opening todo.md: ${error}`);
     }
   });
-
   // Register the command to add a new task
   const addTaskDisposable = vscode.commands.registerCommand("copilot-tasks.addTask", async () => {
     try {
@@ -67,15 +66,51 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      // Get category (optional)
-      const category = await vscode.window.showInputBox({
-        prompt: "Enter category (optional)",
-        placeHolder: "Tasks, Ideas, Bugs, etc.",
-      });
+      // Get existing categories
+      const tasks = taskManager.getTasks();
+      const existingCategories = [...new Set(tasks.map((task) => task.category).filter(Boolean))];
+
+      let category: string | undefined;
+
+      if (existingCategories.length > 0) {
+        // Create category options
+        const categoryOptions = [
+          { label: "$(plus) New category...", value: "NEW_CATEGORY" },
+          { label: "$(list-unordered) No category", value: "NO_CATEGORY" },
+          ...existingCategories.map((cat) => ({ label: `$(folder) ${cat}`, value: cat })),
+        ];
+
+        const selectedCategory = await vscode.window.showQuickPick(categoryOptions, {
+          placeHolder: "Select a category for this task",
+          matchOnDescription: true,
+        });
+
+        if (!selectedCategory) {
+          return; // User cancelled
+        }
+
+        if (selectedCategory.value === "NEW_CATEGORY") {
+          // Ask for new category name
+          category = await vscode.window.showInputBox({
+            prompt: "Enter new category name",
+            placeHolder: "Tasks, Ideas, Bugs, etc.",
+          });
+        } else if (selectedCategory.value !== "NO_CATEGORY") {
+          category = selectedCategory.value;
+        }
+      } else {
+        // No existing categories, ask for optional category
+        category = await vscode.window.showInputBox({
+          prompt: "Enter category (optional)",
+          placeHolder: "Tasks, Ideas, Bugs, etc.",
+        });
+      }
 
       // Use task manager to add task
       await taskManager.addTask(taskText, category || undefined);
-      vscode.window.showInformationMessage(`Task added: "${taskText}"`);
+
+      const categoryText = category ? ` in category "${category}"` : "";
+      vscode.window.showInformationMessage(`Task added: "${taskText}"${categoryText}`);
     } catch (error) {
       vscode.window.showErrorMessage(`Error adding task: ${error}`);
     }

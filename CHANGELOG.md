@@ -16,6 +16,13 @@ All notable changes to the "Copilot Tasks" extension will be documented in this 
 - File system watcher for automatic task reloading
 - Debounced editor change detection to prevent recursive updates
 
+### Improved
+
+- **Build System**: Updated VS Code tasks configuration to use `pnpm` instead of `npm`
+  - Added comprehensive task suite: compile, watch, lint, test, pretest, install, clean
+  - Improved problem matchers for better error reporting
+  - Added `rimraf` for reliable cross-platform file cleanup
+
 ### Features
 
 - **Commands**:
@@ -51,6 +58,29 @@ All notable changes to the "Copilot Tasks" extension will be documented in this 
 - Robust markdown parsing with category extraction
 - Error handling and user feedback
 - Resource cleanup on extension deactivation
+
+## [1.0.1] - Bug Fixes & Improvements
+
+### Fixed
+
+- **🐛 Synchronisation circulaire**: Corrigé le problème où les nouvelles tâches n'étaient pas sauvegardées dans le fichier
+  - Ajout du flag `isSaving` pour éviter les conflits de rechargement
+  - Méthode `setTasksFromSync()` pour éviter les sauvegardes récursives
+  - Logique améliorée du FileSystemWatcher
+
+### Improved
+
+- **✨ Sélection des catégories**: Interface QuickPick pour choisir les catégories existantes
+  - Options: "Nouvelle catégorie", "Pas de catégorie", ou sélection des existantes
+  - Icônes pour une meilleure expérience utilisateur
+  - Détection automatique des catégories existantes
+
+### Technical
+
+- Nettoyage de la nomenclature des fichiers (kebab-case)
+- Suppression des fichiers dupliqués en camelCase
+- Amélioration de la gestion des erreurs de synchronisation
+- Optimisation des timeouts pour la stabilité
 
 ## [1.0.0] - V1 MVP Complete
 

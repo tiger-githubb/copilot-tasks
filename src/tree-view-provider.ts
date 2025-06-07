@@ -4,7 +4,7 @@
 
 import * as vscode from "vscode";
 import { Task } from "./parser";
-import { TaskManager } from "./taskManager";
+import { TaskManager } from "./task-manager";
 
 export class TaskTreeItem extends vscode.TreeItem {
   constructor(public readonly task: Task, public readonly collapsibleState: vscode.TreeItemCollapsibleState) {

@@ -4,14 +4,16 @@
 
 import * as vscode from "vscode";
 import { TodoParser } from "./parser";
-import { TaskManager } from "./taskManager";
+import { TaskManager } from "./task-manager";
 
 export class SyncManager {
   private static instance: SyncManager;
   private taskManager: TaskManager;
   private editorChangeDisposable: vscode.Disposable | null = null;
+  private saveDocumentDisposable: vscode.Disposable | null = null;
   private isUpdatingFromFile = false;
   private lastKnownContent = "";
+  private isSyncDisabled = false;
 
   private constructor() {
     this.taskManager = TaskManager.getInstance();
@@ -31,14 +33,13 @@ export class SyncManager {
     this.setupEditorSync();
     this.setupTaskManagerSync();
   }
-
   /**
    * Setup editor synchronization (editor -> task manager)
    */
   private setupEditorSync(): void {
     // Listen to document changes
     this.editorChangeDisposable = vscode.workspace.onDidChangeTextDocument(async (event) => {
-      if (this.isUpdatingFromFile) {
+      if (this.isUpdatingFromFile || this.isSyncDisabled) {
         return; // Avoid recursive updates
       }
 
@@ -52,7 +53,12 @@ export class SyncManager {
     });
 
     // Listen to document saves
-    vscode.workspace.onDidSaveTextDocument(async (document) => {
+    this.saveDocumentDisposable = vscode.workspace.onDidSaveTextDocument(async (document) => {
+      if (this.isSyncDisabled) {
+        console.log("Sync disabled, skipping save sync...");
+        return;
+      }
+
       const todoPath = this.taskManager.getTodoPath();
       if (todoPath && document.uri.fsPath === todoPath) {
         console.log("Todo file saved, synchronizing...");
@@ -87,7 +93,6 @@ export class SyncManager {
       await this.syncFromEditor(document);
     }, 500); // 500ms debounce
   }
-
   /**
    * Synchronize from editor to task manager
    */
@@ -106,10 +111,8 @@ export class SyncManager {
       // Parse tasks from current editor content
       const newTasks = TodoParser.parse(currentContent);
 
-      // Update task manager without triggering file save
-      const taskManager = this.taskManager as any;
-      taskManager.tasks = newTasks;
-      taskManager._onTasksChanged.fire(newTasks);
+      // Update task manager using the proper method to avoid conflicts
+      await this.taskManager.setTasksFromSync(newTasks);
 
       console.log(`Synchronized ${newTasks.length} tasks from editor`);
 
@@ -164,6 +167,23 @@ export class SyncManager {
       this.isUpdatingFromFile = false;
     }
   }
+  /**
+   * Temporarily disable synchronization during TaskManager operations
+   */
+  public disableSync(): void {
+    this.isSyncDisabled = true;
+    console.log("SyncManager: Sync disabled");
+  }
+
+  /**
+   * Re-enable synchronization after TaskManager operations
+   */
+  public enableSync(): void {
+    setTimeout(() => {
+      this.isSyncDisabled = false;
+      console.log("SyncManager: Sync re-enabled");
+    }, 300); // Wait for file system to settle
+  }
 
   /**
    * Force synchronization
@@ -194,13 +214,15 @@ export class SyncManager {
     const status = `📋 Tasks: ${stats.total} | ✅ Done: ${stats.completed} | 📝 Editor: ${isOpen ? "Open" : "Closed"}`;
     vscode.window.showInformationMessage(status);
   }
-
   /**
    * Dispose resources
    */
   public dispose(): void {
     if (this.editorChangeDisposable) {
       this.editorChangeDisposable.dispose();
+    }
+    if (this.saveDocumentDisposable) {
+      this.saveDocumentDisposable.dispose();
     }
     if (this.debounceTimeout) {
       clearTimeout(this.debounceTimeout);
