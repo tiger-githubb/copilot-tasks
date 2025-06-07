@@ -14,8 +14,24 @@
   "contributes": {
     "commands": [
       {
-        "command": "copilot-tasks.helloWorld",
-        "title": "Hello World"
+        "command": "copilot-tasks.openTodo",
+        "title": "Open Todo File",
+        "category": "Copilot Tasks"
+      },
+      {
+        "command": "copilot-tasks.addTask",
+        "title": "Add New Task",
+        "category": "Copilot Tasks"
+      },
+      {
+        "command": "copilot-tasks.toggleTask",
+        "title": "Toggle Task Completion",
+        "category": "Copilot Tasks"
+      },
+      {
+        "command": "copilot-tasks.showStats",
+        "title": "Show Task Statistics",
+        "category": "Copilot Tasks"
       }
     ]
   },
