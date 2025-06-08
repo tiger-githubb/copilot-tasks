@@ -14,6 +14,7 @@ export class TaskManager {
   private fileWatcher: vscode.FileSystemWatcher | null = null;
   private readonly _onTasksChanged = new vscode.EventEmitter<Task[]>();
   public readonly onTasksChanged = this._onTasksChanged.event;
+  private isSaving = false; // Track if we're currently saving to avoid reload conflicts
 
   private constructor() {}
 
@@ -49,12 +50,21 @@ export class TaskManager {
     // Watch for changes to todo.md
     const pattern = new vscode.RelativePattern(path.dirname(this.todoPath), "todo.md");
 
-    this.fileWatcher = vscode.workspace.createFileSystemWatcher(pattern);
-
-    // Handle file changes
+    this.fileWatcher = vscode.workspace.createFileSystemWatcher(pattern); // Handle file changes
     this.fileWatcher.onDidChange(async () => {
-      console.log("Todo file changed, reloading tasks...");
-      await this.loadTasks();
+      if (this.isSaving) {
+        console.log("File changed during save, skipping reload...");
+        return;
+      }
+
+      // Add small delay to avoid rapid successive changes
+      setTimeout(async () => {
+        if (!this.isSaving) {
+          // Double-check after delay
+          console.log("Todo file changed, reloading tasks...");
+          await this.loadTasks();
+        }
+      }, 100);
     });
 
     // Handle file creation
@@ -91,7 +101,6 @@ export class TaskManager {
       vscode.window.showErrorMessage(`Error loading tasks: ${error}`);
     }
   }
-
   /**
    * Save tasks to todo.md file
    */
@@ -101,6 +110,14 @@ export class TaskManager {
     }
 
     try {
+      this.isSaving = true; // Set flag to prevent reload during save
+
+      // Disable SyncManager during save operation
+      const syncManager = await this.getSyncManager();
+      if (syncManager) {
+        syncManager.disableSync();
+      }
+
       // Read current content to preserve formatting
       let originalContent = "";
       if (fs.existsSync(this.todoPath)) {
@@ -108,27 +125,43 @@ export class TaskManager {
       }
 
       // Generate new content
-      const newContent = TodoParser.generateContent(this.tasks, originalContent); // Temporarily disable file watcher to avoid recursive updates
-      const wasWatching = this.fileWatcher;
-      if (wasWatching) {
-        wasWatching.dispose();
-        this.fileWatcher = null;
-      }
+      const newContent = TodoParser.generateContent(this.tasks, originalContent);
 
       // Write file
       await fs.promises.writeFile(this.todoPath, newContent, "utf8");
       console.log(`Saved ${this.tasks.length} tasks to todo.md`);
 
-      // Re-enable file watcher after a short delay
-      if (wasWatching) {
-        setTimeout(async () => {
-          await this.setupFileWatcher();
-        }, 100);
+      // Re-enable SyncManager after save
+      if (syncManager) {
+        syncManager.enableSync();
       }
     } catch (error) {
       console.error("Error saving tasks:", error);
       vscode.window.showErrorMessage(`Error saving tasks: ${error}`);
+    } finally {
+      // Reset flag after a longer delay to allow file system to settle
+      setTimeout(() => {
+        this.isSaving = false;
+      }, 500); // Increased from 200ms to 500ms
     }
+  }
+  /**
+   * Get SyncManager instance (lazy import to avoid circular dependency)
+   */
+  private async getSyncManager(): Promise<any> {
+    try {
+      const { SyncManager } = await import("./sync-manager.js");
+      return SyncManager.getInstance();
+    } catch (error) {
+      return null;
+    }
+  }
+
+  /**
+   * Check if TaskManager is currently saving
+   */
+  public isSavingFile(): boolean {
+    return this.isSaving;
   }
 
   /**
@@ -139,20 +172,51 @@ export class TaskManager {
   }
 
   /**
+   * Set tasks from synchronization (avoids triggering save)
+   */
+  public async setTasksFromSync(newTasks: Task[]): Promise<void> {
+    this.tasks = newTasks;
+    this._onTasksChanged.fire(this.tasks);
+  }
+  /**
    * Add a new task
    */
   public async addTask(text: string, category?: string): Promise<void> {
     const newTask: Task = {
-      id: `task-${Date.now()}-${text.substring(0, 10).replace(/\s+/g, "-")}`,
+      id: this.generateStableTaskId(text),
       text,
       completed: false,
-      line: this.tasks.length,
+      line: -1, // Use -1 to indicate this is a new task not yet in the file
       category,
     };
 
     this.tasks.push(newTask);
+    this._onTasksChanged.fire(this.tasks); // Notify UI immediately
     await this.saveTasks();
-    this._onTasksChanged.fire(this.tasks);
+    // Do NOT reload here - let the file watcher handle it
+  }
+
+  /**
+   * Generate a stable task ID based on content (matches parser logic)
+   */
+  private generateStableTaskId(text: string): string {
+    // Use the same logic as the parser for consistency
+    const textHash = text.substring(0, 20).replace(/\s+/g, "-").toLowerCase();
+    const fullTextHash = this.simpleHash(text);
+    return `task-${fullTextHash}-${textHash}`;
+  }
+
+  /**
+   * Generate a simple hash from text for stable IDs
+   */
+  private simpleHash(text: string): string {
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+      const char = text.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36);
   }
 
   /**
