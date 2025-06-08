@@ -6,7 +6,7 @@ A next-generation Markdown-based task manager integrated into VS Code, designed 
 
 ## Why Copilot Tasks?
 
-**For Development Teams:**
+**For Developers:**
 
 - Unifies task management with code development workflow
 - Leverages AI to accelerate task planning and execution
@@ -52,29 +52,6 @@ A next-generation Markdown-based task manager integrated into VS Code, designed 
 - **Task Statistics**: View progress overview (total, completed, remaining, percentage)
 - **Force Sync**: Manually synchronize editor and UI if needed
 - **Refresh Tasks**: Reload tasks from file
-
-## 🚀 Enterprise Roadmap
-
-### Phase 2: GitHub Integration (Q3 2025)
-
-- **GitHub Issues sync**: Bidirectional sync with GitHub Issues
-- **Pull Request integration**: Link tasks to PRs automatically
-- **Project boards**: Sync with GitHub Projects v2
-- **Team collaboration**: Multi-developer task assignment
-
-### Phase 3: Advanced Analytics (Q4 2025)
-
-- **Productivity metrics**: Developer velocity tracking
-- **Team insights**: Cross-project task analysis
-- **Time estimation**: AI-powered task duration prediction
-- **Burndown charts**: Sprint and milestone progress visualization
-
-### Phase 4: Enterprise Features (2026)
-
-- **SSO integration**: Enterprise authentication support
-- **API access**: Programmatic task management
-- **Custom workflows**: Configurable task automation
-- **Advanced reporting**: Executive dashboards and insights
 
 ## 📊 Adoption Metrics
 
@@ -150,15 +127,6 @@ Edit your `todo.md` file directly:
    - Estimate time and resources
 4. A structured prompt is inserted for Copilot to complete
 
-### Sidebar Features
-
-The **Copilot Tasks** panel in the Explorer sidebar provides:
-
-- **Real-time task list**: See all your tasks at a glance
-- **Category organization**: Tasks grouped under their headers
-- **Quick actions**: Click to toggle, right-click for context menu
-- **Visual progress**: Different icons for completed vs pending tasks
-
 ## File Format
 
 Your `todo.md` file uses standard Markdown syntax:
@@ -191,28 +159,6 @@ Welcome to your task manager! Use checkboxes to track your progress.
 | `Copilot Tasks: Refresh Tasks`             | Reload tasks from file                        |
 | `Copilot Tasks: Toggle Grouping`           | Switch between categorized/flat view          |
 | `Copilot Tasks: Force Synchronization`     | Manually sync editor and UI                   |
-
-## Roadmap
-
-### V1.1 – Copilot Integration ✅ COMPLETE
-
-- [x] Copilot-powered task completion positioning
-- [x] Smart task suggestion generation
-- [x] Integration with VS Code's language model tools
-- [x] Structured prompts for task planning
-
-### V2 – Advanced Features
-
-- Drag & drop task reordering
-- Multiple todo files support
-- Task search and filtering
-- Priority levels and custom tags
-
-### V3 – Integrations
-
-- GitHub Issues synchronization
-- Team collaboration features
-- Task analytics and reporting
 
 ## Contributing
 
