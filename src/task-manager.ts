@@ -171,7 +171,6 @@ export class TaskManager {
     this.tasks = newTasks;
     this._onTasksChanged.fire(this.tasks);
   }
-
   /**
    * Add a new task
    */
@@ -180,13 +179,14 @@ export class TaskManager {
       id: `task-${Date.now()}-${text.substring(0, 10).replace(/\s+/g, "-")}`,
       text,
       completed: false,
-      line: this.tasks.length,
+      line: -1, // Use -1 to indicate this is a new task not yet in the file
       category,
     };
 
     this.tasks.push(newTask);
     await this.saveTasks();
-    this._onTasksChanged.fire(this.tasks);
+    // Reload tasks to get correct line numbers after saving
+    await this.loadTasks();
   }
 
   /**
