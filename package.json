@@ -4,6 +4,16 @@
   "description": "A Markdown-based task manager integrated into VS Code, designed to work seamlessly with GitHub Copilot. Organize your tasks in a todo.md file, enjoy an intuitive sidebar interface, and leverage the power of Copilot to help write or improve your tasks.",
   "version": "0.0.1",
   "icon": "resources/icon.png",
+  "publisher": "TigerDev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tiger-githubb/copilot-tasks.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tiger-githubb/copilot-tasks/issues"
+  },
+  "homepage": "https://github.com/tiger-githubb/copilot-tasks#readme",
+  "license": "Apache-2.0",
   "engines": {
     "vscode": "^1.100.0"
   },
@@ -53,6 +63,12 @@
         "command": "copilot-tasks.syncStatus",
         "title": "Show Sync Status",
         "category": "Copilot Tasks"
+      },
+      {
+        "command": "copilot-tasks.showMetrics",
+        "title": "Show Productivity Metrics",
+        "category": "Copilot Tasks",
+        "icon": "$(graph)"
       },
       {
         "command": "copilot-tasks.refreshTree",
@@ -131,18 +147,24 @@
     "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
-    "clean": "rimraf out"
+    "clean": "rimraf out",
+    "package": "vsce package --no-dependencies",
+    "publish": "vsce publish --no-dependencies",
+    "publish:patch": "vsce publish patch --no-dependencies",
+    "publish:minor": "vsce publish minor --no-dependencies",
+    "publish:major": "vsce publish major --no-dependencies"
   },
   "devDependencies": {
-    "@types/vscode": "^1.100.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/vscode": "^1.100.0",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
-    "eslint": "^9.25.1",
-    "typescript": "^5.8.3",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.5.2",
-    "rimraf": "^5.0.5"
+    "@vscode/vsce": "^3.5.0",
+    "eslint": "^9.25.1",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.8.3"
   }
 }

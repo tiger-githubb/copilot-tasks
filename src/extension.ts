@@ -3,6 +3,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
+import { MetricsCollector } from "./metrics-collector";
 import { SyncManager } from "./sync-manager";
 import { TaskManager } from "./task-manager";
 import { TaskTreeDataProvider } from "./tree-view-provider";
@@ -13,6 +14,9 @@ export function activate(context: vscode.ExtensionContext) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "copilot-tasks" is now active!');
+
+  // Initialize metrics collector
+  const metricsCollector = MetricsCollector.getInstance(context);
 
   // Initialize task manager and synchronization
   const taskManager = TaskManager.getInstance();
@@ -109,6 +113,9 @@ export function activate(context: vscode.ExtensionContext) {
       // Use task manager to add task
       await taskManager.addTask(taskText, category || undefined);
 
+      // Track metrics
+      metricsCollector.trackTaskCreated();
+
       const categoryText = category ? ` in category "${category}"` : "";
       vscode.window.showInformationMessage(`Task added: "${taskText}"${categoryText}`);
     } catch (error) {
@@ -154,6 +161,11 @@ export function activate(context: vscode.ExtensionContext) {
       // Toggle the task using task manager
       await taskManager.toggleTask(taskToToggle.id);
 
+      // Track metrics if task was completed
+      if (!taskToToggle.completed) {
+        metricsCollector.trackTaskCompleted();
+      }
+
       const status = taskToToggle.completed ? "uncompleted" : "completed";
       vscode.window.showInformationMessage(`Task marked as ${status}`);
     } catch (error) {
@@ -192,6 +204,11 @@ Progress: ${stats.completionRate.toFixed(1)}%`;
   // Register the command to show sync status
   const syncStatusDisposable = vscode.commands.registerCommand("copilot-tasks.syncStatus", () => {
     syncManager.showSyncStatus();
+  });
+
+  // Register metrics commands
+  const showMetricsDisposable = vscode.commands.registerCommand("copilot-tasks.showMetrics", async () => {
+    await metricsCollector.showMetricsSummary();
   });
 
   // Register TreeView commands
@@ -272,6 +289,9 @@ Progress: ${stats.completionRate.toFixed(1)}%`;
           // Position cursor after the comment
           const newPosition = new vscode.Position(i + 2, 9);
           editor.selection = new vscode.Selection(newPosition, newPosition);
+
+          // Track Copilot interaction
+          metricsCollector.trackCopilotInteraction();
 
           vscode.window.showInformationMessage(`Positioned cursor for Copilot completion. Task: "${taskToComplete.text}"`);
           break;
@@ -366,6 +386,9 @@ Progress: ${stats.completionRate.toFixed(1)}%`;
             editor.selection = new vscode.Selection(newPosition, newPosition);
             editor.revealRange(new vscode.Range(newPosition, newPosition));
 
+            // Track Copilot interaction
+            metricsCollector.trackCopilotInteraction();
+
             vscode.window.showInformationMessage(`Added suggestion prompt. Use Copilot to complete the content.`);
             break;
           }
@@ -383,6 +406,7 @@ Progress: ${stats.completionRate.toFixed(1)}%`;
     showStatsDisposable,
     forceSyncDisposable,
     syncStatusDisposable,
+    showMetricsDisposable,
     refreshTreeDisposable,
     toggleGroupingDisposable,
     completeWithCopilotDisposable,
@@ -441,4 +465,5 @@ export function deactivate() {
   // Dispose of managers
   TaskManager.getInstance().dispose();
   SyncManager.getInstance().dispose();
+  MetricsCollector.getInstance(null as any).dispose();
 }
