@@ -14,12 +14,12 @@
 
 ---
 
-## V1.1 – Ergonomie & Copilot
+## V1.1 – Ergonomie & Copilot ✅ COMPLET
 
-- [ ] Bouton/commande "Compléter avec Copilot" (ouvre `todo.md` à la bonne ligne pour déclencher Copilot)
-- [ ] Commande pour insérer une suggestion Copilot à partir d'une tâche sélectionnée
-- [ ] Ajout du tag `@tag:language-model-tools` dans le `package.json`
-- [ ] Icône d'extension et visuels Marketplace
+- [x] Bouton/commande "Compléter avec Copilot" (ouvre `todo.md` à la bonne ligne pour déclencher Copilot)
+- [x] Commande pour insérer une suggestion Copilot à partir d'une tâche sélectionnée
+- [x] Ajout du tag `@tag:language-model-tools` dans le `package.json`
+- [x] Icône d'extension et visuels Marketplace
 
 ---
 

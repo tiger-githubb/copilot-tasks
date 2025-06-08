@@ -19,6 +19,13 @@ A Markdown-based task manager integrated into VS Code, designed to work seamless
 - **Click to toggle**: Click any task in the sidebar to mark it as complete/incomplete
 - **Flexible grouping**: Toggle between categorized and flat list views
 
+### 🤖 Copilot Integration (V1.1)
+
+- **Complete with Copilot**: Position cursor in `todo.md` with context for Copilot suggestions
+- **Insert Copilot Suggestions**: Generate structured prompts for task breakdowns and planning
+- **Smart prompts**: Choose from predefined suggestion types (breakdowns, requirements, checklists, etc.)
+- **Seamless workflow**: Direct integration with VS Code's Copilot features
+
 ### ⚡ Commands & Actions
 
 - **Open Todo File**: Quickly access your `todo.md` file
@@ -72,6 +79,27 @@ Edit your `todo.md` file directly:
 - **Organize**: Add markdown headers to create categories
 - **Sync**: The extension automatically keeps everything in sync
 
+### 🤖 Using Copilot Features
+
+#### Complete with Copilot
+
+1. Select a pending task from the sidebar or command palette
+2. Run "Complete with Copilot" command
+3. The extension opens `todo.md` and positions your cursor with context
+4. Use Copilot's suggestions to add implementation details
+
+#### Insert Copilot Suggestions
+
+1. Select a task you want to break down or plan
+2. Run "Insert Copilot Suggestion" command
+3. Choose from suggestion types:
+   - Break down into smaller steps
+   - Identify key requirements
+   - Create completion checklist
+   - Analyze challenges and solutions
+   - Estimate time and resources
+4. A structured prompt is inserted for Copilot to complete
+
 ### Sidebar Features
 
 The **Copilot Tasks** panel in the Explorer sidebar provides:
@@ -102,23 +130,26 @@ Welcome to your task manager! Use checkboxes to track your progress.
 
 ## Commands
 
-| Command                                 | Description                           |
-| --------------------------------------- | ------------------------------------- |
-| `Copilot Tasks: Open Todo File`         | Open/create the todo.md file          |
-| `Copilot Tasks: Add New Task`           | Add a new task with optional category |
-| `Copilot Tasks: Toggle Task Completion` | Mark task as done/undone              |
-| `Copilot Tasks: Show Task Statistics`   | Display progress overview             |
-| `Copilot Tasks: Refresh Tasks`          | Reload tasks from file                |
-| `Copilot Tasks: Toggle Grouping`        | Switch between categorized/flat view  |
-| `Copilot Tasks: Force Synchronization`  | Manually sync editor and UI           |
+| Command                                    | Description                                   |
+| ------------------------------------------ | --------------------------------------------- |
+| `Copilot Tasks: Open Todo File`            | Open/create the todo.md file                  |
+| `Copilot Tasks: Add New Task`              | Add a new task with optional category         |
+| `Copilot Tasks: Toggle Task Completion`    | Mark task as done/undone                      |
+| `Copilot Tasks: Complete with Copilot`     | Position cursor for Copilot task completion   |
+| `Copilot Tasks: Insert Copilot Suggestion` | Generate structured prompts for task planning |
+| `Copilot Tasks: Show Task Statistics`      | Display progress overview                     |
+| `Copilot Tasks: Refresh Tasks`             | Reload tasks from file                        |
+| `Copilot Tasks: Toggle Grouping`           | Switch between categorized/flat view          |
+| `Copilot Tasks: Force Synchronization`     | Manually sync editor and UI                   |
 
 ## Roadmap
 
-### V1.1 – Copilot Integration (Coming Soon)
+### V1.1 – Copilot Integration ✅ COMPLETE
 
-- Copilot-powered task completion suggestions
-- Smart task generation from code context
-- Integration with VS Code's language model tools
+- [x] Copilot-powered task completion positioning
+- [x] Smart task suggestion generation
+- [x] Integration with VS Code's language model tools
+- [x] Structured prompts for task planning
 
 ### V2 – Advanced Features
 

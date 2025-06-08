@@ -3,11 +3,22 @@
   "displayName": "Copilot Tasks",
   "description": "A Markdown-based task manager integrated into VS Code, designed to work seamlessly with GitHub Copilot. Organize your tasks in a todo.md file, enjoy an intuitive sidebar interface, and leverage the power of Copilot to help write or improve your tasks.",
   "version": "0.0.1",
+  "icon": "resources/icon.png",
   "engines": {
     "vscode": "^1.100.0"
   },
   "categories": [
     "Other"
+  ],
+  "keywords": [
+    "todo",
+    "tasks",
+    "markdown",
+    "copilot",
+    "productivity"
+  ],
+  "tags": [
+    "language-model-tools"
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
@@ -52,6 +63,18 @@
         "command": "copilot-tasks.toggleGrouping",
         "title": "Toggle Grouping",
         "icon": "$(list-tree)"
+      },
+      {
+        "command": "copilot-tasks.completeWithCopilot",
+        "title": "Complete with Copilot",
+        "category": "Copilot Tasks",
+        "icon": "$(copilot)"
+      },
+      {
+        "command": "copilot-tasks.insertCopilotSuggestion",
+        "title": "Insert Copilot Suggestion",
+        "category": "Copilot Tasks",
+        "icon": "$(sparkle)"
       }
     ],
     "views": {
@@ -59,7 +82,8 @@
         {
           "id": "copilot-tasks.taskView",
           "name": "Copilot Tasks",
-          "when": "workbenchState != empty"
+          "when": "workbenchState != empty",
+          "icon": "$(checklist)"
         }
       ]
     },
@@ -74,6 +98,11 @@
           "command": "copilot-tasks.toggleGrouping",
           "when": "view == copilot-tasks.taskView",
           "group": "navigation"
+        },
+        {
+          "command": "copilot-tasks.completeWithCopilot",
+          "when": "view == copilot-tasks.taskView",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -85,6 +114,11 @@
         {
           "command": "copilot-tasks.toggleTask",
           "when": "view == copilot-tasks.taskView && viewItem == completedTask",
+          "group": "inline"
+        },
+        {
+          "command": "copilot-tasks.insertCopilotSuggestion",
+          "when": "view == copilot-tasks.taskView && viewItem == pendingTask",
           "group": "inline"
         }
       ]

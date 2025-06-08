@@ -205,6 +205,177 @@ Progress: ${stats.completionRate.toFixed(1)}%`;
     vscode.window.showInformationMessage(`Tasks now grouped by: ${mode}`);
   });
 
+  // Register the command to complete with Copilot
+  const completeWithCopilotDisposable = vscode.commands.registerCommand("copilot-tasks.completeWithCopilot", async (taskArg?: any) => {
+    try {
+      let taskToComplete;
+
+      if (taskArg && taskArg.id) {
+        // Called from TreeView with task argument
+        taskToComplete = taskArg;
+      } else {
+        // Called from command palette, show QuickPick for pending tasks
+        const tasks = taskManager.getTasks().filter((task) => !task.completed);
+
+        if (tasks.length === 0) {
+          vscode.window.showInformationMessage("No pending tasks found. Add some tasks first.");
+          return;
+        }
+
+        // Show task selection
+        const taskItems = tasks.map((task) => ({
+          label: `⏳ ${task.text}`,
+          description: task.category ? `Category: ${task.category}` : undefined,
+          task: task,
+        }));
+
+        const selectedItem = await vscode.window.showQuickPick(taskItems, {
+          placeHolder: "Select a task to complete with Copilot",
+        });
+
+        if (!selectedItem) {
+          return;
+        }
+
+        taskToComplete = selectedItem.task;
+      }
+
+      // Open todo.md at the specific task line
+      const todoPath = await getTodoPath();
+      if (!todoPath) {
+        return;
+      }
+
+      if (!fs.existsSync(todoPath)) {
+        await createDefaultTodoFile(todoPath);
+        vscode.window.showInformationMessage("Created todo.md file at workspace root.");
+      }
+
+      const document = await vscode.workspace.openTextDocument(todoPath);
+      const editor = await vscode.window.showTextDocument(document);
+
+      // Find the task in the document and position cursor
+      const content = document.getText();
+      const lines = content.split("\n");
+
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes(taskToComplete.text)) {
+          const position = new vscode.Position(i, lines[i].length);
+          editor.selection = new vscode.Selection(position, position);
+          editor.revealRange(new vscode.Range(position, position));
+
+          // Add a new line for Copilot to work with
+          const edit = new vscode.WorkspaceEdit();
+          edit.insert(document.uri, position, "\n\n// TODO: ");
+          await vscode.workspace.applyEdit(edit);
+
+          // Position cursor after the comment
+          const newPosition = new vscode.Position(i + 2, 9);
+          editor.selection = new vscode.Selection(newPosition, newPosition);
+
+          vscode.window.showInformationMessage(`Positioned cursor for Copilot completion. Task: "${taskToComplete.text}"`);
+          break;
+        }
+      }
+    } catch (error) {
+      vscode.window.showErrorMessage(`Error completing with Copilot: ${error}`);
+    }
+  });
+
+  // Register the command to insert Copilot suggestion
+  const insertCopilotSuggestionDisposable = vscode.commands.registerCommand(
+    "copilot-tasks.insertCopilotSuggestion",
+    async (taskArg?: any) => {
+      try {
+        let selectedTask;
+
+        if (taskArg && taskArg.id) {
+          // Called from TreeView with task argument
+          selectedTask = taskArg;
+        } else {
+          // Called from command palette, show QuickPick for pending tasks
+          const tasks = taskManager.getTasks().filter((task) => !task.completed);
+
+          if (tasks.length === 0) {
+            vscode.window.showInformationMessage("No pending tasks found. Add some tasks first.");
+            return;
+          }
+
+          const taskItems = tasks.map((task) => ({
+            label: `⏳ ${task.text}`,
+            description: task.category ? `Category: ${task.category}` : undefined,
+            task: task,
+          }));
+
+          const selectedItem = await vscode.window.showQuickPick(taskItems, {
+            placeHolder: "Select a task to generate suggestions for",
+          });
+
+          if (!selectedItem) {
+            return;
+          }
+
+          selectedTask = selectedItem.task;
+        }
+
+        // Generate suggestion prompt based on task
+        const suggestions = [
+          `Break down the task "${selectedTask.text}" into smaller actionable steps`,
+          `What are the key requirements for: ${selectedTask.text}`,
+          `Create a checklist for completing: ${selectedTask.text}`,
+          `List potential challenges and solutions for: ${selectedTask.text}`,
+          `Estimate time and resources needed for: ${selectedTask.text}`,
+        ];
+
+        const selectedSuggestion = await vscode.window.showQuickPick(suggestions, {
+          placeHolder: "Select the type of suggestion to generate",
+        });
+
+        if (!selectedSuggestion) {
+          return;
+        }
+
+        // Open todo.md and insert the suggestion prompt
+        const todoPath = await getTodoPath();
+        if (!todoPath) {
+          return;
+        }
+
+        if (!fs.existsSync(todoPath)) {
+          await createDefaultTodoFile(todoPath);
+        }
+
+        const document = await vscode.workspace.openTextDocument(todoPath);
+        const editor = await vscode.window.showTextDocument(document);
+
+        // Find insertion point after the selected task
+        const content = document.getText();
+        const lines = content.split("\n");
+
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].includes(selectedTask.text)) {
+            const insertPosition = new vscode.Position(i + 1, 0);
+            const suggestionText = `\n### ${selectedSuggestion}\n\n`;
+
+            const edit = new vscode.WorkspaceEdit();
+            edit.insert(document.uri, insertPosition, suggestionText);
+            await vscode.workspace.applyEdit(edit);
+
+            // Position cursor for Copilot to generate content
+            const newPosition = new vscode.Position(i + 4, 0);
+            editor.selection = new vscode.Selection(newPosition, newPosition);
+            editor.revealRange(new vscode.Range(newPosition, newPosition));
+
+            vscode.window.showInformationMessage(`Added suggestion prompt. Use Copilot to complete the content.`);
+            break;
+          }
+        }
+      } catch (error) {
+        vscode.window.showErrorMessage(`Error inserting Copilot suggestion: ${error}`);
+      }
+    }
+  );
+
   context.subscriptions.push(
     openTodoDisposable,
     addTaskDisposable,
@@ -213,7 +384,9 @@ Progress: ${stats.completionRate.toFixed(1)}%`;
     forceSyncDisposable,
     syncStatusDisposable,
     refreshTreeDisposable,
-    toggleGroupingDisposable
+    toggleGroupingDisposable,
+    completeWithCopilotDisposable,
+    insertCopilotSuggestionDisposable
   );
 }
 
