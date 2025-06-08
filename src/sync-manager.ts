@@ -105,11 +105,24 @@ export class SyncManager {
         return;
       }
 
+      // Skip if TaskManager is currently saving to avoid conflicts
+      if (this.taskManager.isSavingFile && this.taskManager.isSavingFile()) {
+        console.log("TaskManager is saving, skipping sync from editor");
+        return;
+      }
+
       this.lastKnownContent = currentContent;
       this.isUpdatingFromFile = true;
 
       // Parse tasks from current editor content
       const newTasks = TodoParser.parse(currentContent);
+      const currentTasks = this.taskManager.getTasks();
+
+      // Only update if tasks actually changed (avoid duplication)
+      if (this.tasksAreEqual(newTasks, currentTasks)) {
+        console.log("Tasks unchanged, skipping sync");
+        return;
+      }
 
       // Update task manager using the proper method to avoid conflicts
       await this.taskManager.setTasksFromSync(newTasks);
@@ -182,7 +195,7 @@ export class SyncManager {
     setTimeout(() => {
       this.isSyncDisabled = false;
       console.log("SyncManager: Sync re-enabled");
-    }, 300); // Wait for file system to settle
+    }, 500); // Increased delay to wait for file system to settle
   }
 
   /**
@@ -227,5 +240,34 @@ export class SyncManager {
     if (this.debounceTimeout) {
       clearTimeout(this.debounceTimeout);
     }
+  }
+
+  /**
+   * Compare two task arrays to check if they are functionally equal
+   */
+  private tasksAreEqual(tasks1: any[], tasks2: any[]): boolean {
+    if (tasks1.length !== tasks2.length) {
+      return false;
+    }
+
+    // Sort both arrays by id for comparison
+    const sorted1 = [...tasks1].sort((a, b) => a.id.localeCompare(b.id));
+    const sorted2 = [...tasks2].sort((a, b) => a.id.localeCompare(b.id));
+
+    for (let i = 0; i < sorted1.length; i++) {
+      const task1 = sorted1[i];
+      const task2 = sorted2[i];
+
+      if (
+        task1.id !== task2.id ||
+        task1.text !== task2.text ||
+        task1.completed !== task2.completed ||
+        task1.category !== task2.category
+      ) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

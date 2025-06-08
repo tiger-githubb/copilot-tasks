@@ -56,8 +56,15 @@ export class TaskManager {
         console.log("File changed during save, skipping reload...");
         return;
       }
-      console.log("Todo file changed, reloading tasks...");
-      await this.loadTasks();
+
+      // Add small delay to avoid rapid successive changes
+      setTimeout(async () => {
+        if (!this.isSaving) {
+          // Double-check after delay
+          console.log("Todo file changed, reloading tasks...");
+          await this.loadTasks();
+        }
+      }, 100);
     });
 
     // Handle file creation
@@ -132,10 +139,10 @@ export class TaskManager {
       console.error("Error saving tasks:", error);
       vscode.window.showErrorMessage(`Error saving tasks: ${error}`);
     } finally {
-      // Reset flag after a delay to allow file system to settle
+      // Reset flag after a longer delay to allow file system to settle
       setTimeout(() => {
         this.isSaving = false;
-      }, 200);
+      }, 500); // Increased from 200ms to 500ms
     }
   }
   /**
@@ -176,7 +183,7 @@ export class TaskManager {
    */
   public async addTask(text: string, category?: string): Promise<void> {
     const newTask: Task = {
-      id: `task-${Date.now()}-${text.substring(0, 10).replace(/\s+/g, "-")}`,
+      id: this.generateStableTaskId(text),
       text,
       completed: false,
       line: -1, // Use -1 to indicate this is a new task not yet in the file
@@ -184,9 +191,32 @@ export class TaskManager {
     };
 
     this.tasks.push(newTask);
+    this._onTasksChanged.fire(this.tasks); // Notify UI immediately
     await this.saveTasks();
-    // Reload tasks to get correct line numbers after saving
-    await this.loadTasks();
+    // Do NOT reload here - let the file watcher handle it
+  }
+
+  /**
+   * Generate a stable task ID based on content (matches parser logic)
+   */
+  private generateStableTaskId(text: string): string {
+    // Use the same logic as the parser for consistency
+    const textHash = text.substring(0, 20).replace(/\s+/g, "-").toLowerCase();
+    const fullTextHash = this.simpleHash(text);
+    return `task-${fullTextHash}-${textHash}`;
+  }
+
+  /**
+   * Generate a simple hash from text for stable IDs
+   */
+  private simpleHash(text: string): string {
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+      const char = text.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36);
   }
 
   /**

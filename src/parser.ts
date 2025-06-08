@@ -71,10 +71,22 @@ export class TodoParser {
           updatedLines[existingTask.line] = `${indent}- ${checkbox} ${task.text}`;
         }
       }
-    }
+    } // Add new tasks that don't exist in the original content
+    // Check both by ID and by text content to prevent duplicates
+    const newTasks = tasks.filter((task) => {
+      // First check if task exists by ID
+      const existsById = existingTasks.some((et) => et.id === task.id);
+      if (existsById) {
+        return false;
+      }
 
-    // Add new tasks that don't exist in the original content
-    const newTasks = tasks.filter((task) => !existingTasks.some((et) => et.id === task.id));
+      // Also check if task exists by text content in the same category
+      const existsByContent = existingTasks.some(
+        (et) => et.text.trim() === task.text.trim() && (et.category || "Tasks") === (task.category || "Tasks")
+      );
+
+      return !existsByContent;
+    });
 
     if (newTasks.length > 0) {
       // Group new tasks by category
@@ -194,13 +206,28 @@ export class TodoParser {
 
     return lines.join("\n");
   }
-
   /**
-   * Generate a unique task ID
+   * Generate a unique task ID based on content, not line number
    */
   private static generateTaskId(line: number, text: string): string {
+    // Use a content-based hash instead of line number for stability
     const textHash = text.substring(0, 20).replace(/\s+/g, "-").toLowerCase();
-    return `task-${line}-${textHash}`;
+    // Create a simple hash of the full text for uniqueness
+    const fullTextHash = this.simpleHash(text);
+    return `task-${fullTextHash}-${textHash}`;
+  }
+
+  /**
+   * Generate a simple hash from text for stable IDs
+   */
+  private static simpleHash(text: string): string {
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+      const char = text.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36);
   }
 
   /**
