@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2025-06-08 - Enterprise Ready 🚀
+
+### Added
+
+#### Enterprise Features
+
+- **Advanced Metrics Collection**: Comprehensive productivity analytics system
+- **Show Productivity Metrics** command: Real-time dashboard with productivity scores
+- **Metrics Export**: JSON export capability for enterprise reporting
+- **Session Tracking**: Automatic user engagement and duration monitoring
+- **Copilot Usage Analytics**: Track AI interaction patterns for ROI measurement
+
+#### Legal & Business
+
+- **Apache 2.0 License**: Upgraded from MIT for enterprise compatibility
+- **Enterprise Strategy Documentation**: Complete acquisition readiness framework
+- **Productivity Scoring Algorithm**: Weighted metrics for task completion and AI usage
+
+#### Developer Experience
+
+- **Enhanced README**: Enterprise value proposition and strategic roadmap
+- **Metrics Integration**: Automatic tracking in all user actions
+- **Performance Optimizations**: Improved scalability for team usage
+
+### Changed
+
+- License upgraded from MIT to Apache 2.0
+- README restructured with enterprise focus
+- Package metadata updated for marketplace positioning
+
+### Technical
+
+- New `MetricsCollector` class with persistent storage
+- Integrated tracking in task creation, completion, and Copilot interactions
+- Added productivity scoring and analytics dashboard
+
 ## [0.0.1] - 2024-12-XX
 
 ### Added
