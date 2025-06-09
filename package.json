@@ -147,7 +147,7 @@
     "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
-    "test:unit": "mocha out/test/**/*.test.js --ui tdd",
+    "test:unit": "mocha out/tests/**/*.test.js --ui tdd",
     "test:vscode": "vscode-test",
     "clean": "rimraf out",
     "package": "vsce package --no-dependencies",
