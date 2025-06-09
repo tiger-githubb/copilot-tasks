@@ -147,6 +147,8 @@
     "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
+    "test:unit": "mocha out/test/**/*.test.js --ui tdd",
+    "test:vscode": "vscode-test",
     "clean": "rimraf out",
     "package": "vsce package --no-dependencies",
     "publish": "vsce publish --no-dependencies",
@@ -164,6 +166,7 @@
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.5.0",
     "eslint": "^9.25.1",
+    "mocha": "^11.5.0",
     "rimraf": "^5.0.5",
     "typescript": "^5.8.3"
   }

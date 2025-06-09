@@ -5,7 +5,9 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import { Task, TodoParser } from "./parser";
+import { CONFIG } from "../constants";
+import { Task } from "../types";
+import { TodoParser } from "./parser";
 
 export class TaskManager {
   private static instance: TaskManager;
@@ -34,7 +36,7 @@ export class TaskManager {
       return;
     }
 
-    this.todoPath = path.join(workspaceFolder.uri.fsPath, "todo.md");
+    this.todoPath = path.join(workspaceFolder.uri.fsPath, CONFIG.DEFAULT_TODO_FILE);
     await this.setupFileWatcher();
     await this.loadTasks();
   }
@@ -45,10 +47,8 @@ export class TaskManager {
   private async setupFileWatcher(): Promise<void> {
     if (!this.todoPath) {
       return;
-    }
-
-    // Watch for changes to todo.md
-    const pattern = new vscode.RelativePattern(path.dirname(this.todoPath), "todo.md");
+    } // Watch for changes to todo.md
+    const pattern = new vscode.RelativePattern(path.dirname(this.todoPath), CONFIG.DEFAULT_TODO_FILE);
 
     this.fileWatcher = vscode.workspace.createFileSystemWatcher(pattern); // Handle file changes
     this.fileWatcher.onDidChange(async () => {

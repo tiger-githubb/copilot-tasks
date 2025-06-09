@@ -3,19 +3,14 @@
  * Handles parsing of task checkboxes and extracting task information
  */
 
-export interface Task {
-  id: string;
-  text: string;
-  completed: boolean;
-  line: number;
-  category?: string;
-}
+import { REGEX_PATTERNS } from "../constants";
+import { Task } from "../types";
 
 export class TodoParser {
-  private static readonly TASK_REGEX = /^(\s*)-\s*\[([ x])\]\s*(.+?)(?:\r?\n|$)/gm;
-  private static readonly HEADER_REGEX = /^(#{1,6})\s*(.+?)(?:\r?\n|$)/gm;
-  private static readonly TASK_LINE_REGEX = /^(\s*)-\s*\[([ x])\]\s*(.+)$/;
-  private static readonly HEADER_LINE_REGEX = /^(#{1,6})\s*(.+)$/;
+  private static readonly TASK_REGEX = REGEX_PATTERNS.TASK_REGEX;
+  private static readonly HEADER_REGEX = REGEX_PATTERNS.HEADER_REGEX;
+  private static readonly TASK_LINE_REGEX = REGEX_PATTERNS.TASK_LINE_REGEX;
+  private static readonly HEADER_LINE_REGEX = REGEX_PATTERNS.HEADER_LINE_REGEX;
 
   /**
    * Parse a markdown content and extract all tasks

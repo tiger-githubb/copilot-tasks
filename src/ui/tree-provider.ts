@@ -3,8 +3,8 @@
  */
 
 import * as vscode from "vscode";
-import { Task } from "./parser";
-import { TaskManager } from "./task-manager";
+import { TaskManager } from "../core/task-manager";
+import { Task } from "../types";
 
 export class TaskTreeItem extends vscode.TreeItem {
   constructor(public readonly task: Task, public readonly collapsibleState: vscode.TreeItemCollapsibleState) {

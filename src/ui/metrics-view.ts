@@ -1,13 +1,6 @@
 import * as vscode from "vscode";
-
-export interface UsageMetrics {
-  tasksCreated: number;
-  tasksCompleted: number;
-  copilotInteractions: number;
-  githubSyncs: number;
-  activeUsers: number;
-  sessionDuration: number;
-}
+import { EXTENSION_ID } from "../constants";
+import { UsageMetrics } from "../types";
 
 export class MetricsCollector {
   private static instance: MetricsCollector;
@@ -27,9 +20,8 @@ export class MetricsCollector {
     }
     return MetricsCollector.instance;
   }
-
   private loadMetrics(): UsageMetrics {
-    return this.context.globalState.get("copilot-tasks.metrics", {
+    return this.context.globalState.get(`${EXTENSION_ID}.metrics`, {
       tasksCreated: 0,
       tasksCompleted: 0,
       copilotInteractions: 0,
@@ -40,7 +32,7 @@ export class MetricsCollector {
   }
 
   private saveMetrics(): void {
-    this.context.globalState.update("copilot-tasks.metrics", this.metrics);
+    this.context.globalState.update(`${EXTENSION_ID}.metrics`, this.metrics);
   }
 
   public trackTaskCreated(): void {
