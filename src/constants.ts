@@ -13,8 +13,9 @@ export const COMMANDS = {
   COMPLETE_WITH_COPILOT: "copilot-tasks.completeWithCopilot",
   SHOW_METRICS: "copilot-tasks.showMetrics",
   SHOW_STATS: "copilot-tasks.showStats",
-  INSERT_SUGGESTION: "copilot-tasks.insertSuggestion",
+  INSERT_SUGGESTION: "copilot-tasks.insertCopilotSuggestion", // Fixed: match package.json
   SYNC_STATUS: "copilot-tasks.syncStatus",
+  OPEN_DASHBOARD: "copilot-tasks.openDashboard",
 } as const;
 
 export const CONFIG = {

@@ -2,7 +2,7 @@
   "name": "copilot-tasks",
   "displayName": "Copilot Tasks",
   "description": "A Markdown-based task manager integrated into VS Code, designed to work seamlessly with GitHub Copilot. Organize your tasks in a todo.md file, enjoy an intuitive sidebar interface, and leverage the power of Copilot to help write or improve your tasks.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "icon": "resources/icon.png",
   "publisher": "TigerDev",
   "repository": {
@@ -31,7 +31,7 @@
     "language-model-tools"
   ],
   "activationEvents": [],
-  "main": "./out/extension.js",
+  "main": "./out/src/extension.js",
   "contributes": {
     "commands": [
       {
@@ -63,6 +63,12 @@
         "command": "copilot-tasks.syncStatus",
         "title": "Show Sync Status",
         "category": "Copilot Tasks"
+      },
+      {
+        "command": "copilot-tasks.openDashboard",
+        "title": "Open Dashboard",
+        "category": "Copilot Tasks",
+        "icon": "$(dashboard)"
       },
       {
         "command": "copilot-tasks.showMetrics",

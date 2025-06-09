@@ -9,6 +9,7 @@ import { COMMANDS, CONFIG } from "./constants";
 import { SyncManager } from "./core/sync-manager";
 import { TaskManager } from "./core/task-manager";
 import { Task } from "./types";
+import { DashboardPanel } from "./ui/dashboard-panel";
 import { MetricsCollector } from "./ui/metrics-view";
 import { TaskTreeDataProvider } from "./ui/tree-provider";
 
@@ -28,6 +29,7 @@ export function registerAllCommands(
     vscode.commands.registerCommand(COMMANDS.SYNC_STATUS, () => syncStatus(syncManager)),
     vscode.commands.registerCommand(COMMANDS.SHOW_METRICS, () => showMetrics(metricsCollector)),
     vscode.commands.registerCommand(COMMANDS.REFRESH_TREE, () => refreshTree(taskTreeDataProvider)),
+    vscode.commands.registerCommand(COMMANDS.OPEN_DASHBOARD, () => openDashboard(context)),
     vscode.commands.registerCommand("copilot-tasks.toggleGrouping", () => toggleGrouping(taskTreeDataProvider)),
     vscode.commands.registerCommand(COMMANDS.COMPLETE_WITH_COPILOT, (taskArg?: any) =>
       completeWithCopilot(taskManager, metricsCollector, taskArg)
@@ -299,26 +301,23 @@ async function completeWithCopilot(taskManager: TaskManager, metricsCollector: M
     }
 
     const document = await vscode.workspace.openTextDocument(todoPath);
-    const editor = await vscode.window.showTextDocument(document);
-
-    // Find the task in the document and position cursor
+    const editor = await vscode.window.showTextDocument(document); // Find the task in the document and position cursor
     const content = document.getText();
-    const lines = content.split("\\n");
+    const lines = content.split("\n");
 
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].includes(taskToComplete.text)) {
         const position = new vscode.Position(i, lines[i].length);
-        editor.selection = new vscode.Selection(position, position);
-        editor.revealRange(new vscode.Range(position, position));
 
         // Add a new line for Copilot to work with
         const edit = new vscode.WorkspaceEdit();
-        edit.insert(document.uri, position, "\\n\\n// TODO: ");
+        edit.insert(document.uri, position, "\n\n// TODO: ");
         await vscode.workspace.applyEdit(edit);
 
-        // Position cursor after the comment
+        // Position cursor after the inserted comment (position is now updated)
         const newPosition = new vscode.Position(i + 2, 9);
         editor.selection = new vscode.Selection(newPosition, newPosition);
+        editor.revealRange(new vscode.Range(newPosition, newPosition));
 
         // Track Copilot interaction
         metricsCollector.trackCopilotInteraction();
@@ -396,22 +395,20 @@ async function insertSuggestion(taskManager: TaskManager, metricsCollector: Metr
     }
 
     const document = await vscode.workspace.openTextDocument(todoPath);
-    const editor = await vscode.window.showTextDocument(document);
-
-    // Find insertion point after the selected task
+    const editor = await vscode.window.showTextDocument(document); // Find insertion point after the selected task
     const content = document.getText();
-    const lines = content.split("\\n");
+    const lines = content.split("\n");
 
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].includes(selectedTask.text)) {
         const insertPosition = new vscode.Position(i + 1, 0);
-        const suggestionText = `\\n### ${selectedSuggestion}\\n\\n`;
+        const suggestionText = `\n### ${selectedSuggestion}\n\n`;
 
         const edit = new vscode.WorkspaceEdit();
         edit.insert(document.uri, insertPosition, suggestionText);
         await vscode.workspace.applyEdit(edit);
 
-        // Position cursor for Copilot to generate content
+        // Position cursor for Copilot to generate content (after the inserted text)
         const newPosition = new vscode.Position(i + 4, 0);
         editor.selection = new vscode.Selection(newPosition, newPosition);
         editor.revealRange(new vscode.Range(newPosition, newPosition));
@@ -452,4 +449,15 @@ async function getTodoPath(): Promise<string | null> {
 async function createDefaultTodoFile(filePath: string): Promise<string> {
   await fs.promises.writeFile(filePath, CONFIG.DEFAULT_TODO_CONTENT, "utf8");
   return filePath;
+}
+
+/**
+ * Open the dashboard panel - our custom tab
+ */
+function openDashboard(context: vscode.ExtensionContext): void {
+  try {
+    DashboardPanel.createOrShow(context.extensionUri);
+  } catch (error) {
+    vscode.window.showErrorMessage(`Error opening dashboard: ${error}`);
+  }
 }
