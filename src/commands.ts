@@ -37,6 +37,7 @@ export function registerAllCommands(
     vscode.commands.registerCommand(COMMANDS.INSERT_SUGGESTION, (taskArg?: any) =>
       insertSuggestion(taskManager, metricsCollector, taskArg)
     ),
+    vscode.commands.registerCommand(COMMANDS.PLAN_AND_DO, () => planAndDo()),
   ];
 
   context.subscriptions.push(...disposables);
@@ -421,6 +422,72 @@ async function insertSuggestion(taskManager: TaskManager, metricsCollector: Metr
     }
   } catch (error) {
     vscode.window.showErrorMessage(`Error inserting Copilot suggestion: ${error}`);
+  }
+}
+
+/**
+ * Plan and Do: enrichit la prompt utilisateur pour Copilot
+ */
+async function planAndDo(): Promise<void> {
+  try {
+    // Demander la tâche à l'utilisateur
+    const userPrompt = await vscode.window.showInputBox({
+      prompt: "Décris l'action à planifier et exécuter (ex: Génère une page About)",
+      placeHolder: "Ex: Génère une page About",
+    });
+    if (!userPrompt) {
+      return;
+    }
+
+    // Chercher le fichier todo.md
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      vscode.window.showErrorMessage("Aucun dossier ouvert dans VS Code.");
+      return;
+    }
+    const todoPath = path.join(workspaceFolders[0].uri.fsPath, CONFIG.DEFAULT_TODO_FILE);
+    let todoContent = "";
+    if (fs.existsSync(todoPath)) {
+      todoContent = await fs.promises.readFile(todoPath, "utf8");
+    }
+
+    // Générer la prompt enrichie
+    const instruction = `
+You are an expert project assistant. Your job is to:
+1. Read and analyze the current todo.md file (see below).
+2. Carefully review the following user request: "${userPrompt}".
+3. Break down the request into clear, actionable subtasks required to fully accomplish the goal.
+4. Add these subtasks to the todo.md file, using clear and concise English descriptions.
+5. For each subtask, implement the necessary code or actions step by step, checking off each subtask in todo.md as it is completed.
+6. If any context from the codebase is needed, use the #codebase context variable to inform your decisions.
+7. Be thorough, explicit, and do not skip any important implementation or planning step.
+
+---
+
+Current todo.md content:
+${todoContent}
+
+---
+
+User request:
+${userPrompt}
+
+---
+
+Instructions:
+- Always update the todo.md file as you progress.
+- Mark each subtask as complete when done.
+- If you need to create files, functions, or components, describe them in the subtasks and implement them.
+- If you need clarification, ask the user for more details before proceeding.
+`;
+
+    // Copy the enhanced prompt to clipboard
+    await vscode.env.clipboard.writeText(instruction);
+    vscode.window.showInformationMessage(
+      "Optimized Copilot prompt copied to clipboard. Paste it in Copilot Chat to start the workflow."
+    );
+  } catch (error) {
+    vscode.window.showErrorMessage(`Erreur Plan and Do : ${error}`);
   }
 }
 

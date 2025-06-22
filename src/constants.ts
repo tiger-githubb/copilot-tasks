@@ -16,6 +16,7 @@ export const COMMANDS = {
   INSERT_SUGGESTION: "copilot-tasks.insertCopilotSuggestion", // Fixed: match package.json
   SYNC_STATUS: "copilot-tasks.syncStatus",
   OPEN_DASHBOARD: "copilot-tasks.openDashboard",
+  PLAN_AND_DO: "copilot-tasks.planAndDo",
 } as const;
 
 export const CONFIG = {

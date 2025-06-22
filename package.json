@@ -97,6 +97,12 @@
         "title": "Insert Copilot Suggestion",
         "category": "Copilot Tasks",
         "icon": "$(sparkle)"
+      },
+      {
+        "command": "copilot-tasks.planAndDo",
+        "title": "Plan and Do (Copilot)",
+        "category": "Copilot Tasks",
+        "icon": "$(light-bulb)"
       }
     ],
     "views": {
