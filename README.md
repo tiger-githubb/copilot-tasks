@@ -53,6 +53,15 @@ A next-generation Markdown-based task manager integrated into VS Code, designed 
 - **Force Sync**: Manually synchronize editor and UI if needed
 - **Refresh Tasks**: Reload tasks from file
 
+### 🌍 Internationalization Support
+
+- **Automatic language detection**: Uses VS Code's language preference
+- **Multi-language dashboard**: Currently supports English (default) and French
+- **Extensible design**: Easy to add new languages via JSON resource files
+- **Fallback behavior**: Gracefully defaults to English if translations are missing
+
+See [i18n documentation](docs/i18n.md) for details on adding new languages.
+
 ## 📊 Adoption Metrics
 
 _Ready for enterprise measurement and tracking:_

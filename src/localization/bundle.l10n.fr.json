@@ -1,0 +1,22 @@
+{
+  "dashboard.title": "Copilot Tasks Dashboard",
+  "dashboard.refresh": "Actualiser",
+  "stats.total": "Total Tâches",
+  "stats.completed": "Complétées",
+  "stats.pending": "En Attente", 
+  "stats.progress": "Progression",
+  "addTask.title": "Ajouter une tâche",
+  "addTask.placeholder": "Entrez votre nouvelle tâche...",
+  "addTask.button": "Ajouter",
+  "tasks.title": "Mes Tâches",
+  "filter.all": "Toutes",
+  "filter.pending": "En cours",
+  "filter.completed": "Terminées",
+  "tasks.noTasks": "Aucune tâche trouvée. Ajoutez votre première tâche ci-dessus ! 🚀",
+  "tasks.deleteConfirm": "Êtes-vous sûr de vouloir supprimer la tâche \"{0}\" ?",
+  "tasks.deleteYes": "Oui",
+  "tasks.deleteNo": "Non",
+  "tasks.deleteSuccess": "Tâche supprimée avec succès",
+  "tasks.added": "Tâche ajoutée: {0}",
+  "delete.tooltip": "Supprimer la tâche"
+}

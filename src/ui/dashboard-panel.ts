@@ -1,9 +1,13 @@
 /**
- * Dashboard WebView Panel - Onglet personnalisé pour l'extension
+ * Dashboard WebView Panel - Custom tab for the extension
  */
 import * as vscode from "vscode";
+import * as nls from "vscode-nls";
 import { TaskManager } from "../core/task-manager";
 import { Task } from "../types";
+
+// Initialize localization
+const localize = nls.loadMessageBundle();
 
 export class DashboardPanel {
   public static currentPanel: DashboardPanel | undefined;
@@ -16,23 +20,23 @@ export class DashboardPanel {
   public static createOrShow(extensionUri: vscode.Uri) {
     const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
 
-    // Si le panel existe déjà, le montrer
+    // If panel already exists, show it
     if (DashboardPanel.currentPanel) {
       DashboardPanel.currentPanel._panel.reveal(column);
       return;
     }
 
-    // Sinon, créer un nouveau panel
+    // Otherwise, create a new panel
     const panel = vscode.window.createWebviewPanel(
       DashboardPanel.viewType,
-      "Copilot Tasks Dashboard",
+      localize("dashboard.title", "Copilot Tasks Dashboard"),
       column || vscode.ViewColumn.One,
       {
-        // Activer JavaScript dans le webview
+        // Enable JavaScript in the webview
         enableScripts: true,
-        // Conserver l'état quand caché
+        // Retain state when hidden
         retainContextWhenHidden: true,
-        // Restriction du contenu local uniquement
+        // Restrict local content only
         localResourceRoots: [vscode.Uri.joinPath(extensionUri, "resources")],
       }
     );
@@ -48,13 +52,13 @@ export class DashboardPanel {
     this._panel = panel;
     this._extensionUri = extensionUri;
 
-    // Définir le contenu initial
+    // Set initial content
     this._update();
 
-    // Écouter quand le panel se ferme
+    // Listen when the panel closes
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
 
-    // Écouter les messages du webview
+    // Listen for webview messages
     this._panel.webview.onDidReceiveMessage(
       (message) => {
         switch (message.command) {
@@ -81,9 +85,9 @@ export class DashboardPanel {
     if (taskText && taskText.trim()) {
       const taskManager = TaskManager.getInstance();
       await taskManager.addTask(taskText.trim());
-      this._update(); // Rafraîchir l'affichage
+      this._update(); // Refresh display
 
-      vscode.window.showInformationMessage(`Tâche ajoutée: ${taskText}`);
+      vscode.window.showInformationMessage(localize("tasks.added", "Task added: {0}", taskText));
     }
   }
 
@@ -94,15 +98,15 @@ export class DashboardPanel {
 
     if (task) {
       const response = await vscode.window.showWarningMessage(
-        `Êtes-vous sûr de vouloir supprimer la tâche "${task.text}" ?`,
-        "Oui",
-        "Non"
+        localize("tasks.deleteConfirm", "Are you sure you want to delete the task \"{0}\"?", task.text),
+        localize("tasks.deleteYes", "Yes"),
+        localize("tasks.deleteNo", "No")
       );
 
-      if (response === "Oui") {
+      if (response === localize("tasks.deleteYes", "Yes")) {
         await taskManager.deleteTask(taskId);
         this._update();
-        vscode.window.showInformationMessage("Tâche supprimée avec succès");
+        vscode.window.showInformationMessage(localize("tasks.deleteSuccess", "Task deleted successfully"));
       }
     }
   }
@@ -110,13 +114,13 @@ export class DashboardPanel {
   private async _handleToggleTask(taskId: string) {
     const taskManager = TaskManager.getInstance();
     await taskManager.toggleTask(taskId);
-    this._update(); // Rafraîchir l'affichage
+    this._update(); // Refresh display
   }
 
   public dispose() {
     DashboardPanel.currentPanel = undefined;
 
-    // Nettoyer les ressources
+    // Clean up resources
     this._panel.dispose();
 
     while (this._disposables.length) {
@@ -129,16 +133,16 @@ export class DashboardPanel {
 
   private async _update() {
     const webview = this._panel.webview;
-    this._panel.title = "Copilot Tasks Dashboard";
+    this._panel.title = localize("dashboard.title", "Copilot Tasks Dashboard");
     this._panel.webview.html = await this._getHtmlForWebview(webview);
   }
 
   private async _getHtmlForWebview(webview: vscode.Webview): Promise<string> {
-    // Récupérer les tâches
+    // Get tasks
     const taskManager = TaskManager.getInstance();
     const tasks = taskManager.getTasks();
 
-    // Statistiques
+    // Statistics
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter((t) => t.completed).length;
     const pendingTasks = totalTasks - completedTasks;
@@ -349,26 +353,26 @@ export class DashboardPanel {
     </head>
     <body>
         <div class="header">
-            <div class="title">📋 Copilot Tasks Dashboard</div>
-            <button class="btn btn-refresh" onclick="refreshDashboard()">🔄 Actualiser</button>
+            <div class="title">📋 ${localize("dashboard.title", "Copilot Tasks Dashboard")}</div>
+            <button class="btn btn-refresh" onclick="refreshDashboard()">🔄 ${localize("dashboard.refresh", "Refresh")}</button>
         </div>
         
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number">${totalTasks}</div>
-                <div class="stat-label">Total Tâches</div>
+                <div class="stat-label">${localize("stats.total", "Total Tasks")}</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">${completedTasks}</div>
-                <div class="stat-label">Complétées</div>
+                <div class="stat-label">${localize("stats.completed", "Completed")}</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">${pendingTasks}</div>
-                <div class="stat-label">En Attente</div>
+                <div class="stat-label">${localize("stats.pending", "Pending")}</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">${completionRate}%</div>
-                <div class="stat-label">Progression</div>
+                <div class="stat-label">${localize("stats.progress", "Progress")}</div>
                 <div class="progress-bar">
                     <div class="progress-fill"></div>
                 </div>
@@ -376,18 +380,18 @@ export class DashboardPanel {
         </div>
         
         <div class="add-task-form">
-            <div class="section-title">➕ Ajouter une tâche</div>
+            <div class="section-title">➕ ${localize("addTask.title", "Add Task")}</div>
             <div class="form-group">
-                <input type="text" class="form-input" id="taskInput" placeholder="Entrez votre nouvelle tâche..." />
-                <button class="btn" onclick="addTask()">Ajouter</button>
+                <input type="text" class="form-input" id="taskInput" placeholder="${localize("addTask.placeholder", "Enter your new task...")}" />
+                <button class="btn" onclick="addTask()">${localize("addTask.button", "Add")}</button>
             </div>
         </div>
           <div class="tasks-section">
-            <div class="section-title">📝 Mes Tâches</div>
+            <div class="section-title">📝 ${localize("tasks.title", "My Tasks")}</div>
             <div class="filter-section">
-                <button class="filter-btn active" onclick="filterTasks('all')">Toutes</button>
-                <button class="filter-btn" onclick="filterTasks('pending')">En cours</button>
-                <button class="filter-btn" onclick="filterTasks('completed')">Terminées</button>
+                <button class="filter-btn active" onclick="filterTasks('all')">${localize("filter.all", "All")}</button>
+                <button class="filter-btn" onclick="filterTasks('pending')">${localize("filter.pending", "In Progress")}</button>
+                <button class="filter-btn" onclick="filterTasks('completed')">${localize("filter.completed", "Completed")}</button>
             </div>
             <div id="tasks-container">
                 ${this._generateTasksHtml(tasks)}
@@ -473,7 +477,7 @@ export class DashboardPanel {
   private _generateTasksHtml(tasks: Task[]): string {
     if (tasks.length === 0) {
       return `<p style="text-align: center; color: var(--vscode-descriptionForeground); padding: 40px;">
-        Aucune tâche trouvée. Ajoutez votre première tâche ci-dessus ! 🚀
+        ${localize("tasks.noTasks", "No tasks found. Add your first task above! 🚀")}
       </p>`;
     }
     return tasks
@@ -484,7 +488,7 @@ export class DashboardPanel {
         <span class="task-text ${task.completed ? "task-completed" : ""}" onclick="toggleTask('${task.id}')">${this._escapeHtml(
           task.text
         )}</span>
-        <button class="btn-delete" onclick="event.stopPropagation(); deleteTask('${task.id}')" title="Supprimer la tâche">🗑️</button>
+        <button class="btn-delete" onclick="event.stopPropagation(); deleteTask('${task.id}')" title="${localize("delete.tooltip", "Delete task")}">🗑️</button>
       </div>
     `
       )

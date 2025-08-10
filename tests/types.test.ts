@@ -21,8 +21,9 @@ suite("Types and Constants Tests", () => {
         "copilot-tasks.completeWithCopilot",
         "copilot-tasks.showMetrics",
         "copilot-tasks.showStats",
-        "copilot-tasks.insertSuggestion",
+        "copilot-tasks.insertCopilotSuggestion",
         "copilot-tasks.syncStatus",
+        "copilot-tasks.openDashboard",
       ];
       const commandValues = Object.values(COMMANDS) as string[];
       expectedCommands.forEach((cmd) => {
