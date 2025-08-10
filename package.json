@@ -175,5 +175,8 @@
     "mocha": "^11.5.0",
     "rimraf": "^5.0.5",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "vscode-nls": "^5.2.0"
   }
 }
